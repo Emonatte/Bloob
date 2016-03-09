@@ -7,11 +7,13 @@ public class attract : MonoBehaviour {
 
 	public void Attract(Transform body, Rigidbody rb)
 	{
-		Vector3 gravityUp = (body.position - transform.position).normalized;
+		// Räkna ut var kroppen befinner sig i relation till planeten och normaliserar den.
+		Vector3 normalized_body_position = (body.position - transform.position).normalized;
 		Vector3 bodyUp = body.up;
-		rb.AddForce (gravityUp * gravity);
+		rb.AddForce (normalized_body_position * gravity);
 
-		Quaternion targetRotation = Quaternion.FromToRotation (bodyUp, gravityUp) * body.rotation;
+		// LÄS PÅ OM QUATERNION FÖÖR FAAAN!
+		Quaternion targetRotation = Quaternion.FromToRotation (bodyUp, normalized_body_position) * body.rotation;
 		body.rotation = Quaternion.Slerp (body.rotation, targetRotation, 50 * Time.deltaTime);
 	}
 }
