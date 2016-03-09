@@ -1,95 +1,108 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class controller : MonoBehaviour {
+public class Controller : MonoBehaviour {
+
 	#region Variabler
-	public float moveSpeed = 15;
-	public float jumpingForce = 20000f;
+
+	public GameObject camera;
+	public float move_speed = 15;
+	public float jumping_force = 20000f;
 
 	private bool isJumping; 
 
-	private Vector3 strafeDir; 
-	private Vector3 moveDir;
-	private Vector3 camStdLocPos;
-	private Vector3 camLastPos;
+	private Vector3 strafe_direction; 
+	private Vector3 move_direction;
+	private Vector3 camera_standard_local_position;
+	private Vector3 camera_last_position;
 
-	private Rigidbody obj_rb;
+	private Rigidbody object_rigidbody;
 
-	public GameObject camera;
 	#endregion
 
+	//Initialisera objektet och dess komponenter
 	void Start () 
 	{
 		isJumping = false;
 
-		obj_rb = GetComponent<Rigidbody> ();
-		camStdLocPos = camera.transform.localPosition;
-		camLastPos = camera.transform.position;
+		object_rigidbody = GetComponent<Rigidbody> ();
+
+		camera_standard_local_position = camera.transform.localPosition;
+		camera_last_position = camera.transform.position;
 
 	}
-	void DoMovement ()
+	//Updatera objektet
+	void Update () 
 	{
-		obj_rb.MovePosition (obj_rb.position + (transform.TransformDirection(moveDir) * moveSpeed * Time.deltaTime)+(transform.TransformDirection(strafeDir)*(moveSpeed/2) * Time.deltaTime));
-	}
+		//Testa rörelser i verticalt och horizontellt led
+		CheckMovement ();
+		
+		//Om kameran har rört på sig sen förra framen, uppdatera dess position om collision
+		//position om collision uppstått
+		if (camera_last_position != camera.transform.position) {
+			CheckCameraCollision ();
+		}
 
+		//Uppdatera kamerans förra position
+		camera_last_position = camera.transform.position;
+	}
+	void FixedUpdate()
+	{
+		DoMovement ();
+	}
+	//Testa rörelse i varje led
 	void CheckMovement ()
 	{
-		moveDir = new Vector3 (0, 0, Input.GetAxisRaw ("Vertical")).normalized;
-		strafeDir = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, 0).normalized;
+		Vector3 horizontal_movement = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, 0).normalized;
+		Vector3 vertical_movement = new Vector3 (0, 0, Input.GetAxisRaw ("Vertical")).normalized;
 
+		strafe_direction = horizontal_movement;
+		move_direction = vertical_movement;
 	}
+	//Utför rörelse efter att varje led har testats
+	void DoMovement ()
+	{
+		Vector3 vertical_movement = transform.TransformDirection(move_direction) * move_speed * Time.deltaTime;
+		Vector3 horizontal_movement = transform.TransformDirection(strafe_direction) * (move_speed/2) * Time.deltaTime;
 
+		object_rigidbody.MovePosition (object_rigidbody.position + vertical_movement + horizontal_movement);
+	}
+	//Testa om spelaren har hoppat eller om ens möjligheten till att hoppa
 	void Jumping ()
 	{
-
 		if (Input.GetKeyDown (KeyCode.Space) && !isJumping) 
 		{
 			isJumping = true;
-			obj_rb.AddRelativeForce (new Vector3 (0, jumpingForce * Time.deltaTime, 0));
+
+			Vector3 jump = new Vector3 (0, jumping_force * Time.deltaTime, 0);
+			object_rigidbody.AddRelativeForce (jump);
 		}
 	}
-
+	//Upprepad kollisionstest
 	void OnCollisionStay (Collision coll)
 	{
-
 		Jumping ();
 
 		if (coll.gameObject.name == "Planet" && isJumping) 
 		{
 			Vector3 hit = coll.contacts [0].normal;
 			if (hit.y > 0) {
-				Debug.Log ("ground");
+				Debug.Log ("On planet ground");
 				isJumping = false;
 			} else
-				Debug.Log ("wall");
+				Debug.Log ("On planet wall");
 		}
 	}
-	// Update is called once per frame
-	void Update () 
-	{
-		CheckMovement ();
-		if (camLastPos != camera.transform.position) {
-			CheckCameraCollision ();
-		}
-
-		camLastPos = camera.transform.position;
-	}
-
-	void FixedUpdate()
-	{
-		DoMovement ();
-	}
-
+	//Kamerans kollisionstest
 	void CheckCameraCollision(){
 
 		RaycastHit hit;
-
 
 		if (Physics.Raycast (transform.position, camera.transform.position - transform.position, out hit, maxDistance: 10f)) {
 			
 			camera.transform.localPosition = Vector3.LerpUnclamped (camera.transform.localPosition, transform.position.normalized, 3f * Time.deltaTime);
 		} else {
-			camera.transform.localPosition = Vector3.LerpUnclamped (camera.transform.localPosition, camStdLocPos, 3f * Time.deltaTime);
+			camera.transform.localPosition = Vector3.LerpUnclamped (camera.transform.localPosition, camera_standard_local_position, 3f * Time.deltaTime);
 		}
 	}
 }
