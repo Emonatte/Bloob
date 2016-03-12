@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class attract : MonoBehaviour {
+public class Attract : MonoBehaviour {
 
 	public float gravity = -10;
 
-	public void Attract(Transform body, Rigidbody rb)
+	public void attract(Transform body, Rigidbody rb)
 	{
 		// Räkna ut var kroppen befinner sig i relation till planeten och normaliserar den.
 		Vector3 normalized_body_position = (body.position - transform.position).normalized;

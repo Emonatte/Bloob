@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[AddComponentMenu("Physics/FauxBody")]
-public class body : MonoBehaviour {
 
-	public attract attractor;
+public class Body : MonoBehaviour {
+
+	public Attract attractor;
 	private Transform obj_trans;
 	private Rigidbody obj_rb;
 
@@ -23,6 +23,6 @@ public class body : MonoBehaviour {
 	void Update ()
 	{
 		//Kallar på gravitationen
-		attractor.Attract (obj_trans, obj_rb);
+		attractor.attract (obj_trans, obj_rb);
 	}
 }
